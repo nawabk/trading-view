@@ -1,3 +1,7 @@
+# How to get started?
+
+run the command `npm run electron-dev`
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
