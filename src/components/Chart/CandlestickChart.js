@@ -2,9 +2,10 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { createChart } from 'lightweight-charts';
 
 const CandlestickChart = React.forwardRef((props, ref) => {
-  const { data } = props;
+  const { data, updatedData } = props;
   const [draw, setDraw] = useState(false);
   const [chartData, setChartData] = useState([]);
+  const [candlestickSeries, setCandlestickSeries] = useState(null);
 
   useEffect(() => {
     if (data.length > 0) {
@@ -27,6 +28,7 @@ const CandlestickChart = React.forwardRef((props, ref) => {
       chart = createChart(ref.current, { width: 800, height: 400 });
       const candlestickSeries = chart.addCandlestickSeries();
       candlestickSeries.setData(chartData);
+      setCandlestickSeries(candlestickSeries);
     }
     return () => {
       if (chart) {
@@ -34,6 +36,18 @@ const CandlestickChart = React.forwardRef((props, ref) => {
       }
     };
   }, [ref, chartData, draw]);
+
+  useEffect(() => {
+    if (updatedData && candlestickSeries) {
+      candlestickSeries.update({
+        time: updatedData.k.t,
+        open: +updatedData.k.o,
+        high: +updatedData.k.h,
+        low: +updatedData.k.l,
+        close: +updatedData.k.c
+      });
+    }
+  }, [updatedData, candlestickSeries]);
 
   return <Fragment />;
 });

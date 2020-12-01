@@ -2,9 +2,10 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { createChart } from 'lightweight-charts';
 
 const AreaChart = React.forwardRef((props, ref) => {
-  const { data } = props;
+  const { data, updatedData } = props;
   const [draw, setDraw] = useState(false);
   const [areaSeriesData, setAreaSeriesData] = useState([]);
+  const [areaSeries, setAreaSeries] = useState(null);
 
   useEffect(() => {
     if (data.length > 0) {
@@ -24,6 +25,7 @@ const AreaChart = React.forwardRef((props, ref) => {
       chart = createChart(ref.current, { width: 800, height: 400 });
       const areaSeries = chart.addAreaSeries();
       areaSeries.setData(areaSeriesData);
+      setAreaSeries(areaSeries);
     }
     return () => {
       if (chart) {
@@ -31,6 +33,15 @@ const AreaChart = React.forwardRef((props, ref) => {
       }
     };
   }, [ref, areaSeriesData, draw]);
+
+  useEffect(() => {
+    if ((updatedData, areaSeries)) {
+      areaSeries.update({
+        time: updatedData.k.t,
+        value: +updatedData.k.c
+      });
+    }
+  }, [updatedData, areaSeries]);
 
   return <Fragment />;
 });
