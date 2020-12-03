@@ -24,16 +24,17 @@ const getRandomColor = () => {
 };
 
 const HistogramChart = React.forwardRef((props, ref) => {
-  const { data, updatedData } = props;
+  const { data, updatedData, range, setRange } = props;
   const [draw, setDraw] = useState(false);
   const [chartData, setChartData] = useState([]);
   const [histogramSeries, setHistogramSeries] = useState(null);
+  const [chart, setChart] = useState(null);
 
   useEffect(() => {
     if (data.length > 0) {
       setChartData(
         data.map(d => ({
-          time: d[0],
+          time: d[0] / 1000,
           value: +d[4],
           color: getRandomColor()
         }))
@@ -50,6 +51,11 @@ const HistogramChart = React.forwardRef((props, ref) => {
         base: 0
       });
       histogramSeries.setData(chartData);
+      setChart(chart);
+      setRange({
+        from: new Date(chart.timeScale().getVisibleRange().from * 1000),
+        to: new Date(chart.timeScale().getVisibleRange().to * 1000)
+      });
       setHistogramSeries(histogramSeries);
     }
     return () => {
@@ -57,7 +63,7 @@ const HistogramChart = React.forwardRef((props, ref) => {
         chart.remove();
       }
     };
-  }, [ref, chartData, draw]);
+  }, [ref, chartData, draw, setRange]);
 
   useEffect(() => {
     if (updatedData && histogramSeries) {
@@ -67,6 +73,17 @@ const HistogramChart = React.forwardRef((props, ref) => {
       });
     }
   }, [histogramSeries, updatedData]);
+
+  useEffect(() => {
+    if (chart && range) {
+      const { from, to } = range;
+
+      chart.timeScale().setVisibleRange({
+        from: from.getTime() / 1000,
+        to: to.getTime() / 1000
+      });
+    }
+  }, [range, chart]);
 
   return <Fragment />;
 });

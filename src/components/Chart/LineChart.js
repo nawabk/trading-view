@@ -2,16 +2,17 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { createChart } from 'lightweight-charts';
 
 const LineChart = React.forwardRef((props, ref) => {
-  const { data, updatedData } = props;
+  const { data, updatedData, setRange, range } = props;
   const [draw, setDraw] = useState(false);
   const [lineSeriesData, setLineSeriesData] = useState([]);
   const [lineSeries, setLineSeries] = useState(null);
+  const [chart, setChart] = useState(null);
 
   useEffect(() => {
     if (data.length > 0) {
       setLineSeriesData(
         data.map(d => ({
-          time: d[0],
+          time: d[0] / 1000,
           value: +d[4]
         }))
       );
@@ -22,9 +23,17 @@ const LineChart = React.forwardRef((props, ref) => {
   useEffect(() => {
     let chart = null;
     if (draw) {
-      chart = createChart(ref.current, { width: 800, height: 400 });
+      chart = createChart(ref.current, {
+        width: 800,
+        height: 400
+      });
       const lineSeries = chart.addLineSeries();
       lineSeries.setData(lineSeriesData);
+      setChart(chart);
+      setRange({
+        from: new Date(chart.timeScale().getVisibleRange().from * 1000),
+        to: new Date(chart.timeScale().getVisibleRange().to * 1000)
+      });
       setLineSeries(lineSeries);
     }
     return () => {
@@ -32,16 +41,27 @@ const LineChart = React.forwardRef((props, ref) => {
         chart.remove();
       }
     };
-  }, [ref, lineSeriesData, draw]);
+  }, [ref, lineSeriesData, draw, setRange]);
 
   useEffect(() => {
-    if (updatedData) {
+    if (updatedData && lineSeries) {
       lineSeries.update({
         time: updatedData.k.t,
         value: +updatedData.k.c
       });
     }
   }, [updatedData, lineSeries]);
+
+  useEffect(() => {
+    if (chart && range) {
+      const { from, to } = range;
+
+      chart.timeScale().setVisibleRange({
+        from: from.getTime() / 1000,
+        to: to.getTime() / 1000
+      });
+    }
+  }, [range, chart]);
 
   return <Fragment />;
 });
